@@ -37,13 +37,6 @@ apt-get upgrade -y
 echo "deb http://download.proxmox.com/debian/ceph-luminous stretch main" > /etc/apt/sources.list.d/ceph.list
 
 
-## Update proxmox and install various system utils
-apt-get -y dist-upgrade --force-yes
-pveam update
-
-pveupdate
-pveupgrade -y
-
 ## Fix no public key error for debian repo
 apt-get install -y debian-archive-keyring
 
@@ -61,8 +54,8 @@ systemctl enable ksmtuned
 echo "Y" | pveceph install
 
 ## Install common system utilities
-apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git
-#snmpd snmp-mibs-downloader
+apt-get install -y whois omping tmux sshpass wget axel nano pigz net-tools htop iptraf iotop iftop iperf vim vim-nox unzip zip software-properties-common aptitude curl dos2unix dialog mlocate build-essential git unbound dnsutils
+#snmpd snmp-mibs-downloader unbound dnsutils
 
 ## Remove conflicting utilities
 apt-get purge -y ntp openntpd chrony
@@ -136,7 +129,6 @@ chmod +x /bin/pigzwrapper
 chmod +x /bin/gzip
 
 ## Detect if this is an OVH server by getting the global IP and checking the ASN
-apt install unbound dnsutils -y
 if [ "$(whois -h v4.whois.cymru.com " -t $(curl ipinfo.io/ip 2> /dev/null)" | tail -n 1 | cut -d'|' -f3 | grep -i "ovh")" != "" ] ; then
 	echo "Deteted OVH Server, installing OVH RTM (real time monitoring)"
 	#http://help.ovh.co.uk/RealTimeMonitoring
@@ -203,6 +195,9 @@ cat <<'EOF' > /etc/sysctl.d/60-maxkeys.conf
 kernel.keys.root_maxkeys=1000000
 kernel.keys.maxkeys=1000000
 EOF
+
+apt autoremove -y
+apt autoclean -y
 
 ## Script Finish
 echo -e '\033[1;33m Finished....please restart the system \033[0m'
